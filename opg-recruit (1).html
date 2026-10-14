@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ОПГ — набор в клан</title>
+<meta name="description" content="Набор в клан ОПГ. Заполни анкету и жди ответа.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&family=Russo+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07040f;
+    --panel: #0d0720;
+    --panel-2: #130a2b;
+    --purple: #b026ff;
+    --violet: #7a1fff;
+    --pink: #e040fb;
+    --line: #2d1654;
+    --text: #ece2fb;
+    --muted: #9a86b8;
+    --danger: #ff3b6b;
+    --ok: #3dffb0;
+    --warn: #ffd23d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(122, 31, 255, .28), transparent 60%),
+      radial-gradient(800px 500px at 90% 70%, rgba(176, 38, 255, .14), transparent 60%),
+      radial-gradient(700px 500px at 5% 90%, rgba(224, 64, 251, .10), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Roboto Condensed", "Arial Narrow", Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ---------- атмосфера: зерно, сканлайны, виньетка ---------- */
+  .grain, .scan, .vignette { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+  .grain {
+    opacity: .09;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .scan {
+    opacity: .5;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px);
+  }
+  .vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.7) 100%); }
+
+  /* ---------- верхняя панель ---------- */
+  .topbar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 20px 0;
+    font-family: "Oswald", sans-serif;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .topbar .brand { color: var(--text); font-weight: 600; }
+  .topbar .brand b { color: var(--purple); text-shadow: 0 0 10px var(--purple); }
+  .live { display: flex; align-items: center; gap: 8px; }
+  .live i {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--purple);
+    box-shadow: 0 0 10px var(--purple), 0 0 22px var(--purple);
+    animation: blink 1.4s infinite;
+  }
+  @keyframes blink { 50% { opacity: .25; } }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    padding: 56px 20px 36px;
+  }
+  .logo {
+    font-family: "Russo One", "Oswald", sans-serif;
+    font-size: clamp(88px, 22vw, 220px);
+    line-height: .95;
+    letter-spacing: .06em;
+    color: #fff;
+    text-shadow:
+      0 0 6px #fff,
+      0 0 16px var(--purple),
+      0 0 36px var(--purple),
+      0 0 72px var(--violet),
+      0 0 120px var(--violet);
+    animation: flicker 6s infinite;
+    user-select: none;
+  }
+  @keyframes flicker {
+    0%, 18%, 22%, 62%, 64%, 100% { opacity: 1; }
+    20%, 63% { opacity: .55; }
+    21% { opacity: .9; }
+  }
+  .subtitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 10px;
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .38em;
+    font-size: clamp(15px, 3.2vw, 24px);
+  }
+  .subtitle::before, .subtitle::after {
+    content: "";
+    height: 10px;
+    flex: 0 1 120px;
+    background: repeating-linear-gradient(-45deg, var(--purple) 0 8px, #13081f 8px 16px);
+    box-shadow: 0 0 14px rgba(176, 38, 255, .6);
+  }
+
+  /* ---------- панель с формой ---------- */
+  main { position: relative; z-index: 5; padding: 0 20px 60px; }
+
+  .panel-wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    filter: drop-shadow(0 0 22px rgba(176, 38, 255, .35));
+  }
+  .panel {
+    background: linear-gradient(135deg, var(--purple), #3b0f6e 60%, var(--violet));
+    padding: 2px;
+    clip-path: polygon(0 18px, 18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  }
+  .panel-inner {
+    background:
+      linear-gradient(180deg, rgba(122, 31, 255, .06), transparent 30%),
+      var(--panel);
+    clip-path: polygon(0 17px, 17px 0, 100% 0, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%);
+  }
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 28px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+    font-family: "Oswald", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .22em;
+    font-size: 14px;
+  }
+  .panel-head .t { color: var(--text); font-weight: 600; }
+  .panel-head .t::before { content: "// "; color: var(--purple); }
+  .panel-head .n { color: var(--muted); font-size: 12px; }
+  .hazard {
+    height: 8px;
+    background: repeating-linear-gradient(-45deg, var(--purple) 0 10px, #12081f 10px 20px);
+    opacity: .85;
+  }
+
+  form { padding: 30px 28px 34px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 24px; }
+  .grid .wide { grid-column: 1 / -1; }
+
+  .field label {
+    display: block;
+    font-family: "Oswald", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .hint {
+    display: block;
+    margin-top: 2px;
+    font-family: "Roboto Condensed", sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 13px 14px;
+    background: #090416;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--violet);
+    color: #fff;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 18px;
+    letter-spacing: .04em;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  input::placeholder { color: #5b4a7a; }
+  input[type="text"]:focus, input[type="number"]:focus {
+    border-color: var(--purple);
+    background: #0c061d;
+    box-shadow: 0 0 0 1px var(--purple), 0 0 18px rgba(176, 38, 255, .45);
+  }
+  input[type="number"]::-webkit-inner-spin-button { opacity: .4; }
+
+  .field.invalid input { border-color: var(--danger); border-left-color: var(--danger); box-shadow: 0 0 14px rgba(255, 59, 107, .35); }
+  .err { min-height: 18px; margin-top: 6px; font-size: 14px; color: var(--danger); }
+
+  /* ---------- навыки ---------- */
+  .grid + .skill { margin-top: 28px; }
+  .skill { padding: 16px 18px; margin-bottom: 14px; background: #0a0519; border: 1px solid var(--line); }
+  .skill-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .skill-name {
+    font-family: "Oswald", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .skill-val { font-family: "Russo One", sans-serif; font-size: 34px; color: #fff; text-shadow: 0 0 12px var(--purple), 0 0 26px var(--purple); line-height: 1; }
+  .skill-val small { font-size: 15px; color: var(--muted); text-shadow: none; margin-left: 2px; }
+  .skill-val output { display: inline-block; min-width: 1.2ch; text-align: right; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(90deg, var(--purple) var(--pct, 50%), #24103f var(--pct, 50%));
+    outline: none;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(176, 38, 255, .25);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    background: #fff;
+    border: 3px solid var(--purple);
+    transform: rotate(45deg);
+    box-shadow: 0 0 14px var(--purple), 0 0 28px var(--purple);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    background: #fff;
+    border: 3px solid var(--purple);
+    border-radius: 0;
+    transform: rotate(45deg);
+    box-shadow: 0 0 14px var(--purple), 0 0 28px var(--purple);
+  }
+  input[type="range"]::-moz-range-track { background: transparent; }
+  input[type="range"]:focus-visible { outline: 1px dashed var(--pink); outline-offset: 8px; }
+
+  .ticks { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #6a5a8a; font-family: "Oswald", sans-serif; letter-spacing: .1em; }
+
+  /* ---------- кнопка ---------- */
+  .btn {
+    position: relative;
+    width: 100%;
+    margin-top: 26px;
+    padding: 18px 24px;
+    border: none;
+    cursor: pointer;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: .3em;
+    color: #fff;
+    background: linear-gradient(90deg, var(--violet), var(--purple) 50%, var(--pink));
+    box-shadow: 0 0 22px rgba(176, 38, 255, .7), inset 0 0 18px rgba(255, 255, 255, .15);
+    text-shadow: 0 0 10px rgba(255, 255, 255, .8);
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+    transition: filter .15s, transform .1s;
+  }
+  .btn:hover:not(:disabled) { filter: brightness(1.2) saturate(1.2); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { cursor: progress; filter: grayscale(.6) brightness(.7); }
+
+  /* ---------- статус ---------- */
+  .status {
+    display: none;
+    margin-top: 22px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--purple);
+    background: #0a0519;
+    font-size: 17px;
+  }
+  .status.show { display: block; animation: pop .25s ease-out; }
+  .status b { font-family: "Oswald", sans-serif; text-transform: uppercase; letter-spacing: .15em; display: block; margin-bottom: 4px; }
+  .status.ok { border-left-color: var(--ok); } .status.ok b { color: var(--ok); text-shadow: 0 0 10px rgba(61, 255, 176, .6); }
+  .status.warn { border-left-color: var(--warn); } .status.warn b { color: var(--warn); }
+  .status.bad { border-left-color: var(--danger); } .status.bad b { color: var(--danger); }
+  .status.info b { color: var(--pink); }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  footer {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    padding: 0 20px 40px;
+    font-size: 13px;
+    color: #62527f;
+    letter-spacing: .06em;
+  }
+
+  noscript { display: block; position: relative; z-index: 6; text-align: center; padding: 14px; background: var(--danger); color: #fff; font-family: "Oswald", sans-serif; letter-spacing: .1em; }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    form { padding: 24px 18px 28px; }
+    .panel-head { padding: 12px 18px; }
+    .panel-head .n { display: none; }
+    .hero { padding-top: 40px; }
+    .subtitle::before, .subtitle::after { flex-basis: 40px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .logo, .live i, .status.show { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<noscript>Для отправки анкеты нужен включённый JavaScript.</noscript>
+
+<div class="topbar">
+  <div class="brand"><b>◢</b> ОПГ // КЛАН</div>
+  <div class="live"><i></i> Набор открыт</div>
+</div>
+
+<section class="hero">
+  <h1 class="logo">ОПГ</h1>
+  <div class="subtitle">Набор в клан</div>
+</section>
+
+<main>
+  <div class="panel-wrap">
+    <div class="panel">
+      <div class="panel-inner">
+        <div class="panel-head">
+          <span class="t">Форма для заполнения</span>
+          <span class="n">Форма №01 · ОПГ</span>
+        </div>
+        <div class="hazard"></div>
+
+        <form id="recruit" novalidate autocomplete="off">
+          <div class="grid">
+            <div class="field wide" id="f-steamid">
+              <label for="steamid">
+                Steam ID
+                <span class="hint">SteamID64 — 17 цифр, начинается с 7656119… Можно вставить ссылку на профиль вида steamcommunity.com/profiles/…</span>
+              </label>
+              <input id="steamid" name="steamid" type="text" inputmode="numeric" placeholder="76561198000000000" maxlength="100" spellcheck="false">
+              <div class="err" data-err></div>
+            </div>
+
+            <div class="field" id="f-nick">
+              <label for="nick">Ник в игре</label>
+              <input id="nick" name="nick" type="text" placeholder="Например: Shadow" maxlength="40">
+              <div class="err" data-err></div>
+            </div>
+
+            <div class="field" id="f-hours">
+              <label for="hours">Количество часов в игре</label>
+              <input id="hours" name="hours" type="number" inputmode="numeric" min="0" max="99999" step="1" placeholder="Например: 450">
+              <div class="err" data-err></div>
+            </div>
+          </div>
+
+          <div class="skill">
+            <div class="skill-head">
+              <div class="skill-name">PvP</div>
+              <div class="skill-val"><output id="pvp-out">5</output><small>/10</small></div>
+            </div>
+            <input type="range" id="pvp" name="pvp" min="0" max="10" step="1" value="5" aria-label="Навык PvP от 0 до 10">
+            <div class="ticks"><span>0</span><span>5</span><span>10</span></div>
+          </div>
+
+          <div class="skill">
+            <div class="skill-head">
+              <div class="skill-name">Строительство</div>
+              <div class="skill-val"><output id="build-out">5</output><small>/10</small></div>
+            </div>
+            <input type="range" id="build" name="build" min="0" max="10" step="1" value="5" aria-label="Навык строительства от 0 до 10">
+            <div class="ticks"><span>0</span><span>5</span><span>10</span></div>
+          </div>
+
+          <div class="skill">
+            <div class="skill-head">
+              <div class="skill-name">Понимание игры</div>
+              <div class="skill-val"><output id="game-out">5</output><small>/10</small></div>
+            </div>
+            <input type="range" id="game" name="game" min="0" max="10" step="1" value="5" aria-label="Понимание игры от 0 до 10">
+            <div class="ticks"><span>0</span><span>5</span><span>10</span></div>
+          </div>
+
+          <!-- ловушка для ботов: люди это поле не видят -->
+          <input type="text" name="_honey" id="honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+          <button type="submit" class="btn" id="submit">Подать заявку</button>
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>ОПГ © Неофициальный сайт клана. Не связан с Facepunch Studios.</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ========== НАСТРОЙКИ ========== */
+  var CONFIG = {
+    EMAIL: '410gone.vip@gmail.com',                 // куда уходят заявки
+    MIN_HOURS: 300,                                  // порог по часам
+    ENDPOINT: 'https://formsubmit.co/ajax/'          // сервис, который шлёт письмо
+  };
+
+  var form = document.getElementById('recruit');
+  var steamEl = document.getElementById('steamid');
+  var nickEl = document.getElementById('nick');
+  var hoursEl = document.getElementById('hours');
+  var honeyEl = document.getElementById('honey');
+  var btn = document.getElementById('submit');
+  var statusEl = document.getElementById('status');
+
+  /* ========== ползунки ========== */
+  var sliders = Array.prototype.slice.call(form.querySelectorAll('input[type="range"]'));
+
+  function updateSlider(r) {
+    var v = Number(r.value);
+    r.style.setProperty('--pct', (v / 10 * 100) + '%');
+    document.getElementById(r.id + '-out').textContent = v;
+  }
+  function updateAllSliders() { sliders.forEach(updateSlider); }
+  sliders.forEach(function (r) { r.addEventListener('input', function () { updateSlider(r); }); });
+  updateAllSliders();
+
+  /* ========== валидация ========== */
+  function parseSteamId(raw) {
+    var m = String(raw).trim().match(/^(?:https?:\/\/)?(?:www\.)?(?:steamcommunity\.com\/profiles\/)?(7656119\d{10})\/?$/i);
+    return m ? m[1] : null;
+  }
+
+  function setError(fieldId, msg) {
+    var f = document.getElementById(fieldId);
+    f.classList.toggle('invalid', !!msg);
+    f.querySelector('[data-err]').textContent = msg || '';
+  }
+
+  function validate() {
+    var firstBad = null;
+    var steamId = parseSteamId(steamEl.value);
+    var nick = nickEl.value.trim();
+    var hoursRaw = hoursEl.value.trim();
+    var hours = Number(hoursRaw);
+
+    if (!steamId) {
+      setError('f-steamid', 'Нужен корректный SteamID64: 17 цифр, начинается с 7656119');
+      firstBad = firstBad || steamEl;
+    } else setError('f-steamid', '');
+
+    if (nick.length < 2) {
+      setError('f-nick', 'Укажи ник (минимум 2 символа)');
+      firstBad = firstBad || nickEl;
+    } else setError('f-nick', '');
+
+    if (hoursRaw === '' || !Number.isInteger(hours) || hours < 0 || hours > 99999) {
+      setError('f-hours', 'Укажи число часов — целое, от 0 до 99999');
+      firstBad = firstBad || hoursEl;
+    } else setError('f-hours', '');
+
+    return { ok: !firstBad, firstBad: firstBad, steamId: steamId, nick: nick, hours: hours };
+  }
+
+  [steamEl, nickEl, hoursEl].forEach(function (el) {
+    el.addEventListener('input', function () {
+      var f = el.closest('.field');
+      f.classList.remove('invalid');
+      f.querySelector('[data-err]').textContent = '';
+    });
+  });
+
+  /* ========== статус ========== */
+  function showStatus(type, title, text) {
+    statusEl.className = 'status show ' + type;
+    statusEl.innerHTML = '';
+    var b = document.createElement('b');
+    b.textContent = title;
+    statusEl.appendChild(b);
+    statusEl.appendChild(document.createTextNode(text));
+    statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function hideStatus() { statusEl.className = 'status'; statusEl.textContent = ''; }
+
+  /* ========== отправка ========== */
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    hideStatus();
+
+    var res = validate();
+    if (!res.ok) {
+      res.firstBad.focus();
+      return;
+    }
+
+    // бот заполнил скрытое поле — делаем вид, что всё прошло, ничего не отправляем
+    if (honeyEl.value) {
+      showStatus('ok', 'Заявка принята', 'Ожидай ответа.');
+      return;
+    }
+
+    // порог по часам: меньше — ничего не отправляем
+    if (res.hours < CONFIG.MIN_HOURS) {
+      showStatus('warn', 'Пока не подходишь',
+        'Для вступления нужно минимум ' + CONFIG.MIN_HOURS + ' часов в игре. Заявка не отправлена — возвращайся, когда наберёшь опыт.');
+      return;
+    }
+
+    var payload = {
+      '_subject': 'ОПГ — новая заявка: ' + res.steamId,
+      '_template': 'table',
+      '_captcha': 'false',
+      'Steam ID': res.steamId,
+      'PvP (0-10)': String(form.pvp.value),
+      'Строительство (0-10)': String(form.build.value),
+      'Понимание игры (0-10)': String(form.game.value)
+    };
+
+    btn.disabled = true;
+    btn.textContent = 'Отправка…';
+    showStatus('info', 'Отправляем', 'Секунду…');
+
+    fetch(CONFIG.ENDPOINT + encodeURIComponent(CONFIG.EMAIL), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (data) {
+          if (!r.ok || data.success === false || data.success === 'false') {
+            throw new Error(data.message || ('HTTP ' + r.status));
+          }
+        });
+      })
+      .then(function () {
+        showStatus('ok', 'Заявка отправлена', 'Мы получили твой Steam ID и оценки. Если подойдёшь — свяжемся.');
+        form.reset();
+        updateAllSliders();
+      })
+      .catch(function () {
+        showStatus('bad', 'Не удалось отправить', 'Проверь соединение и попробуй ещё раз. Если ошибка повторяется — напиши администратору клана.');
+      })
+      .then(function () {
+        btn.disabled = false;
+        btn.textContent = 'Подать заявку';
+      });
+  });
+})();
+</script>
+</body>
+</html>
